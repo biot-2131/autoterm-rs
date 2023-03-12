@@ -1,2 +1,2 @@
-# autoterm-rs
+add some descriptive and help full comments 
 
