@@ -1,2 +1,2 @@
-# autoterm-rs
-# $REPO
+add some descriptive and help full comments 
+
