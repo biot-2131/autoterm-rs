@@ -1,3 +1,11 @@
+#![allow(unused)]
+
+mod print_screen;
+use crate::print_screen::print_screen;
+
 fn main() {
-    println!("Hello, world!");
+
+    let filename: String = print_screen(); 
+    println!("filename = {}", filename);
+
 }
