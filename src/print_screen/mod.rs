@@ -1,4 +1,4 @@
-// add some descriptive and help full comments 
+// add some descriptive and help full comments!
 
 use screenshots::Screen;
 use std::{fs};
