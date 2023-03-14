@@ -2,9 +2,13 @@ use anyhow::Result;
 // use opencv::prelude::*;
 // use opencv::imgcodecs;
 //use opencv:: {prelude::*, highgui, imgcodecs, imgproc};
+// use anyhow::Result;
+// use opencv:: {prelude::*, core, highgui, imgproc, imgcodecs};
+
 
 use opencv::{
     core::*,
+    prelude::*,
 	highgui,
     imgproc,
     imgproc::{match_template, rectangle},
@@ -32,10 +36,11 @@ pub fn show_image(image: &CvImage) -> Result<()> {
     Ok(())
 }
 
-pub fn load_image_path(image_path: &str) -> CvImage {
+pub fn load_color_image(image_path: &str) -> CvImage {
+    // should check if file exists and is readable!
 	let image = opencv::imgcodecs::imread(
 		image_path,
-		opencv::imgcodecs::IMREAD_COLOR, // https://docs.rs/opencv/0.53.1/opencv/imgcodecs/enum.ImreadModes.html
+		opencv::imgcodecs::IMREAD_COLOR,
 	)
 	.expect("Should error here but doesn't");
 
@@ -48,19 +53,44 @@ pub fn load_image_path(image_path: &str) -> CvImage {
 	return image;
 }
 
-pub fn find_waldo() {
-    // a_04_find_waldo_template_search
-    let window_name = "find waldo";
-    let template = imread("assets/waldo.jpg", IMREAD_UNCHANGED).unwrap();
-    let mut img = imread("assets/WaldoBeach.jpg", IMREAD_UNCHANGED).unwrap();
-    let mut res = Mat::default();
-    match_template(&img, &template, &mut res, 0, &no_array()).unwrap();
+pub fn my_match_template(template: CvImage, mut image: CvImage, show: bool) -> Point_<i32> {
+
+    let mut result = Mat::default();
+    match_template(&image, &template, &mut result, 0, &no_array()).unwrap();
     let mut max_loc = Point2i::new(0, 0);
-    min_max_loc(&res, None, None, Some(&mut max_loc), None, &no_array()).unwrap();
-    println!("{:?}", max_loc);
-    rectangle(&mut img, Rect2i::new(max_loc.x, max_loc.y, template.rows(), template.cols()), VecN::<f64, 4>::new(0.0, 0.0, 0.0, 255.0), 4, 0, 0).unwrap(); 
-    highgui::named_window(window_name, 0).unwrap();
-    highgui::imshow(window_name, &mut img).unwrap();
-    highgui::wait_key(0).unwrap();
+    min_max_loc(&result, None, None, Some(&mut max_loc), None, &no_array()).unwrap();
+    // println!("\nresult = {:?}", result);
+    // println!("max_loc = {:?}", max_loc);
+
+    if show {
+        rectangle(&mut image, Rect2i::new(max_loc.x, max_loc.y, 
+            template.rows(), template.cols()),
+            VecN::<f64, 4>::new(0.0, 0.0, 0.0, 0.0), 
+            1, 0, 0).unwrap(); 
+    
+    // 16:9 640:360 848:480 854:480 960:540 1024:576 1280:720 1366:768 1600:900 1920:1080
+        let window_name = "Window Name";
+        highgui::named_window(window_name, 0).unwrap();
+        highgui::resize_window(window_name, 960, 540);
+        highgui::imshow(window_name, &mut image).unwrap();
+        highgui::wait_key(0).unwrap();    
+    }
+    
+    return max_loc;
 }
 
+pub fn crop_image(image: &CvImage, crop_array: &[i32], show: bool) -> CvImage {
+
+    let crop_image = Mat::roi(&image, opencv::core::Rect {
+        x: crop_array[0],
+        y: crop_array[1],
+        width: crop_array[2] - crop_array[0],
+        height: crop_array[3] - crop_array[1],
+    }).unwrap();   
+
+    if show {
+        show_image(&crop_image);
+    }
+
+    return crop_image;
+}
